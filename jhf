@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+SCRIPT=$(realpath -s "$0")
+SCRIPT_PATH=$(dirname "$SCRIPT")
+source "$SCRIPT_PATH"/venv/bin/activate
+python3 "$SCRIPT_PATH"/jhf.py "$@"
