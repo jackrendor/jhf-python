@@ -145,9 +145,23 @@ def print_data(hashes_to_find):
         continue
 
 
+def yield_from_file(filepath):
+    with open(filepath, "r") as f:
+        for line in f:
+            yield line.rstrip()
+
+
 def main():
     if not argv[1:]:
-        print("Supply hash(es)")
+        print("Supply hashe(s) or use --file/-f to specify the file to read")
+        return
+
+    try:
+        if argv[1] in ["--file", "-f"]:
+            print_data(yield_from_file(argv[2]))
+            return
+    except IndexError:
+        print("Supply hashe(s) or use --file/-f to specify the file to read")
         return
 
     print_data(argv[1:])

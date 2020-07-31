@@ -26,10 +26,19 @@ or
 ./configure
 ```
 
-Then you're ready to go. Simply execute the `jhf` file:
+Then you're ready to go. Simply execute the `jhf` file. You can pass the hash as argument:
 
 ```bash
 ./jhf 21232f297a57a5a743894a0e4a801fc3
+```
+You can specify more than one hash
+```bash
+./jhf b3ddbc502e307665f346cbd6e52cc10d 0bc11f2f3279555c317be9cf9e52645a
+```
+Or you can read from file by using `-f` or `--file`
+```bash
+./jhf -f report/hashes.txt
+./jhf --file report/hashes.txt
 ```
 
 ### No virtualenv
