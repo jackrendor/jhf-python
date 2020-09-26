@@ -27,12 +27,43 @@ class JackHashFinder:
         database = {
             32: "md5",
             40: "sha1",
+            41: "MySQL",
             64: "sha256",
             96: "sha384",
             128: "sha512"
         }
-        return database.get(hash_len, None)
+        detected = database.get(hash_len, None)
+        if detected == 'MySQL' and not hash_to_detect.startswith("*"):
+            return None
+        return detected
 
+    def hashes_com(self, hash_to_find):
+        supported_hashes = ["md5", "sha1", "MySQL", "NTLM", "sha256", "sha512"]
+        hash_type = self.detect_hash(hash_to_find)
+        if hash_type not in supported_hashes:
+            return None
+        
+        get_result = self.session.get("https://hashes.com/en/decrypt/hash")
+        get_result.html.render()
+        csrf_token = ""
+        for element in get_result.html.find("input"):
+            if element.attrs.get('name', None) == "csrf_token":
+                csrf_token = element.attrs.get('value', None)
+        
+        post_result = self.session.post("https://hashes.com/en/decrypt/hash", data={
+            'csrf_token':csrf_token,
+            'hashes':hash_to_find,
+            'vyd':64,
+            'submitted': True})
+        post_result.html.render()
+        
+        if "0 found" in post_result.text:
+            return None
+        else:
+            return post_result.text.split('<div class="py-1">')[1].split('</div>')[0].split(':')[1]
+
+
+        
     def md5decrypt_net(self, hash_to_find):
         supported_hashes = ['md5', 'sha1', 'sha256', 'sha384', 'sha512']
         hash_type = self.detect_hash(hash_to_find)
@@ -116,7 +147,7 @@ class JackHashFinder:
         return result
 
     def decrypt_methods(self):
-        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.dcode_fr]
+        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.hashes_com, self.dcode_fr]
 
 
 def initialize(hashes_to_find, print_result=False):
