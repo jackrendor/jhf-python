@@ -7,8 +7,8 @@ I was tired of looking up for common hashes values by hand. During CTFs you will
 # Supported hashes
 | Type   | Support |
 |:------:|:-------:|
-| MySQL  | week    |
-| NTLM   | week    |
+| MySQL  | weak    |
+| NTLM   | weak    |
 | md5    | strong  |
 | sha1   | strong  |
 | sha256 | strong  |
