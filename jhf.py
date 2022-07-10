@@ -43,26 +43,25 @@ class JackHashFinder:
         if hash_type not in supported_hashes:
             return None
         
-        get_result = self.session.get("https://hashes.com/en/decrypt/hash")
-        get_result.html.render()
-        csrf_token = ""
-        for element in get_result.html.find("input"):
-            if element.attrs.get('name', None) == "csrf_token":
-                csrf_token = element.attrs.get('value', None)
+        get_result = self.session.get("https://hashes.com/en/decrypt/hash", headers=self.headers)
+        csrf_token = get_result.html.find("input[name=csrf_token]", first=True).attrs.get('value', None)
         
-        post_result = self.session.post("https://hashes.com/en/decrypt/hash", data={
-            'csrf_token':csrf_token,
-            'hashes':hash_to_find,
-            'vyd':64,
-            'submitted': True})
-        post_result.html.render()
+        post_result = self.session.post("https://hashes.com/en/decrypt/hash",
+            headers=self.headers,
+            data={
+                'csrf_token':csrf_token,
+                'hashes':hash_to_find,
+                'vyd':64,
+                'submitted': True
+            }
+        )
         
         if "0 found" in post_result.text:
             return None
         else:
-            return post_result.text.split('<div class="py-1">')[1].split('</div>')[0].split(':')[1]
-
-
+            hash_result = post_result.html.find('div[class=py-1]', first=True)
+            if hash_result:
+                return hash_result.text.split(hash_to_find+":")[1]
         
     def md5decrypt_net(self, hash_to_find):
         supported_hashes = ['md5', 'sha1', 'sha256', 'sha384', 'sha512']
@@ -74,9 +73,7 @@ class JackHashFinder:
         if hash_type != 'md5':
             url += 'en/%s/' % hash_type.capitalize()
 
-        post_data = {'hash': hash_to_find, 'decrypt': 'Decrypt'}
-
-        post_r = self.session.post(url=url, data=post_data, headers=self.headers)
+        post_r = self.session.post(url=url, data={'hash': hash_to_find, 'decrypt': 'Decrypt'}, headers=self.headers)
         if "Too much connections" in post_r.text:
             return None
 
@@ -100,9 +97,11 @@ class JackHashFinder:
 
         if "no reverse string was found." in get_r.text:
             return None
-        for element in get_r.html.find("em"):
-            if ('long-content', 'string') == element.attrs.get('class', None):
-                return element.text
+
+        hash_result = get_r.html.find("em[class='long-content string']", first=True)
+        if hash_result:
+            return hash_result.text
+
         return None
 
     def hashtoolkit_com(self, hash_to_find):
@@ -114,9 +113,11 @@ class JackHashFinder:
                                  headers=self.headers)
         if "No hashes found for" in get_r.text:
             return None
-        for element in get_r.html.find("span"):
-            if element.attrs.get('title', '').startswith("decrypted"):
-                return element.text
+        
+        hash_result = get_r.html.find("span[title~='decrypted']", first=True)
+
+        if hash_result:
+            return hash_result.text
         return None
 
     def md5online_it(self, hash_to_find):
@@ -125,29 +126,17 @@ class JackHashFinder:
         if hash_type not in supported_hashes:
             return None
         r = self.session.get("http://www.md5online.it/index.lm?key_decript=%s" % hash_to_find, headers=self.headers)
-        result = ""
-        for element in r.html.find('font'):
-            if element.attrs.get('style', None) == "font-size: 20px; color:#004030;":
-                result = element.text
-        if result == "NESSUN RISULTATO":
-            return None
-        return result
+        hash_result = r.html.find("font[style='font-size: 20px; color:#004030;']", first=True)
+        if hash_result:
+            result = hash_result.text.split("\n")[0]
+            if result == "NESSUN RISULTATO":
+                return None
+            return result
+        return None
 
-    def dcode_fr(self, hash_to_find):
-        supported_hash = ["md5"]
-        hash_type = self.detect_hash(hash_to_find)
-        if hash_type not in supported_hash:
-            return None
-        url = "https://www.dcode.fr/api/"
-        post_r = self.session.post(url=url, headers=self.headers,
-                                   data={'tool': 'md5-hash', 'hash': hash_to_find})
-        result = post_r.json().get('results', None)
-        if result == 'No result':
-            return None
-        return result
 
     def decrypt_methods(self):
-        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.hashes_com, self.dcode_fr]
+        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.hashes_com]
 
 
 def initialize(hashes_to_find, print_result=False):
