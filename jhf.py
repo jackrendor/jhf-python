@@ -133,10 +133,30 @@ class JackHashFinder:
                 return None
             return result
         return None
+    
+    def passwordrecovery_io(self, hash_to_find):
+        supported_hashes = ["md5", "sha1", "sha256", "sha512", "cisco"]
+        hash_type = self.detect_hash(hash_to_find)
+        if hash_type not in supported_hashes:
+            return None
+        
+        csrf_get = self.session.get("https://passwordrecovery.io/"+hash_type, headers=self.headers)
+        csrf_token = csrf_get.html.find("input[name=csrf_token]", first=True).attrs.get('value', None)
+        if not csrf_token:
+            return None
+        
+        get_result = self.session.post("https://passwordrecovery.io/query/"+hash_type, headers=self.headers, data={
+            'csrf_token': csrf_token,
+            'hash': hash_to_find
+        })
 
+        result = get_result.html.find("div[class='notification is-link']", first=True)
+        if result:
+            return result.text.split("The hash is: ")[1]
+        return None
 
     def decrypt_methods(self):
-        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.hashes_com]
+        return [self.hashtoolkit_com, self.md5online_it, self.gromweb_com, self.md5decrypt_net, self.hashes_com, self.passwordrecovery_io]
 
 
 def initialize(hashes_to_find, print_result=False):
