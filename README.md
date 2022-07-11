@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="icon.png">
+</p>
+
 # Jack Hash Finder
 Quick lookup for the original value of an hash
 
