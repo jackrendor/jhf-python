@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="icon.png">
+    <img src="logo.png">
 </p>
 
 # Jack Hash Finder
