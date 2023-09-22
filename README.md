@@ -5,6 +5,9 @@
 # Jack Hash Finder
 Quick lookup for the original value of an hash
 
+# DEPRECATED
+This repository is deprecated, go for the new version of jhf: [https://github.com/jackrendor/jhf](https://github.com/jackrendor/jhf)
+
 # Purpose
 I was tired of looking up for common hashes values by hand. During CTFs you will eventually encounter some hashes. Instead of cracking them on your local machine or fire up a browser and look it up, the script does it for you. It tries some services to see if it's a common and known hash.
 
